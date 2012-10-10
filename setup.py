@@ -28,6 +28,7 @@ setup(
     install_requires=[
         'Django>=1.4',
         'blessings==1.5',
+        'django-appconf>=0.5',
     ],
     classifiers=[
         'Environment :: Web Environment',

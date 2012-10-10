@@ -1,0 +1,18 @@
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
+
+class BuiltFileStorage(FileSystemStorage):
+    def __init__(self, location=None, base_url=None, *args, **kwargs):
+        if location is None:
+            location = settings.STATICBUILDER_BUILT_ROOT
+        if base_url is None:
+            base_url = settings.STATIC_URL
+        super(BuiltFileStorage, self).__init__(location, base_url,
+                                               *args, **kwargs)
+
+    def find(self, path, all=False):
+        if settings.STATICBUILDER_COLLECT_BUILT:
+            return super(BuiltFileStorage, self).find(path, all)
+        else:
+            return []
