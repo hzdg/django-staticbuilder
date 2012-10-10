@@ -21,31 +21,24 @@ class Command(BaseCommand):
 
         self.verbosity = int(options.get('verbosity', '1'))
 
-        target_dir = settings.OPTIMIST_OPTIMIZED_ROOT
+        build_dir = settings.OPTIMIST_OPTIMIZED_ROOT
 
         # Remove the old build directory and backup
-        build_dir = '%s.build' % target_dir
-        bkup_dir = '%s.bkup' % target_dir
+        bkup_dir = '%s.bkup' % build_dir
         shutil.rmtree(build_dir, ignore_errors=True)
         shutil.rmtree(bkup_dir, ignore_errors=True)
 
         # Back up the last build
         try:
-            os.rename(target_dir, bkup_dir)
+            os.rename(build_dir, bkup_dir)
         except OSError:
             pass
 
         # Create the static build directory.
         os.makedirs(build_dir)
 
-        # Recreate the target directory so that Django doesn't complain that
-        # it doesn't exist (if it's in STATICFILES_DIRS)
-        os.makedirs(target_dir)
-
-        # Copy the static assets to a temporary directory in order to build.
-        # We don't use OPTIMIZED_ROOT because Django doesn't allow you to
-        # collect static files into a directory that's in STATICFILES_DIRS
-        self.log(t.bold('Collecting static assets for optimization...'))
+        # Copy the static assets to the build directory.
+        self.log(t.bold('Collecting static assets for building...'))
         self.call_command_func(self.collect_for_build, build_dir)
 
         # Run the build commands.
@@ -53,10 +46,6 @@ class Command(BaseCommand):
         for command in commands:
             cmd = command.format(build_dir=quote(build_dir))
             self.shell(cmd)
-
-        # Move the new build directory
-        shutil.rmtree(target_dir)
-        os.rename(build_dir, target_dir)
 
     def call_command_func(self, func, *args, **kwargs):
         print t.bright_black
@@ -78,7 +67,8 @@ class Command(BaseCommand):
 
     def collect_for_build(self, build_dir):
         with patched_settings(STATIC_ROOT=build_dir,
-                              STATIC_FILES_STORAGE=StaticFilesStorage):
+                              STATIC_FILES_STORAGE=StaticFilesStorage,
+                              OPTIMIST_COLLECT_OPTIMIZED=False):
             call_command('collectstatic',
                          verbosity=self.verbosity - 1,
                          interactive=False,
