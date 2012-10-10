@@ -1,3 +1,4 @@
+from blessings import Terminal
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
@@ -8,6 +9,9 @@ from pipes import quote
 import shutil
 import subprocess
 from ...utils import patched_settings
+
+
+t = Terminal()
 
 
 class Command(BaseCommand):
@@ -41,38 +45,53 @@ class Command(BaseCommand):
         # Copy the static assets to a temporary directory in order to build.
         # We don't use BUILT_ROOT because Django doesn't allow you to collect
         # static files into a directory that's in STATICFILES_DIRS
-        self.log('Collecting static assets for building...', 1)
-        with patched_settings(STATIC_ROOT=build_dir,
-                              STATIC_FILES_STORAGE=StaticFilesStorage):
-            call_command('collectstatic',
-                         verbosity=0,
-                         interactive=False,
-                         ignore_patterns=['CVS', '.*', '*~'])
+        self.log(t.bold('Collecting static assets for building...'))
+        self.call_command_func(self.collect_for_build, build_dir)
 
         # Run the build commands.
         build_commands = getattr(settings, 'STATICBUILDER_BUILD_COMMANDS', None) or []
         for command in build_commands:
-            # cmd = 'cd %s && %s' % (quote(tmpdir),
-                                   # command.format(build_dir=quote(tmpdir)))
             cmd = command.format(build_dir=quote(build_dir))
-            self.log('Running command: %s' % cmd, 1)
-            p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, shell=True)
-            stdout, stderr = p.communicate()
-
-            if stderr:
-                raise Exception(stderr)
+            self.shell(cmd)
 
         # Move the new build directory
         shutil.rmtree(target_dir)
         os.rename(build_dir, target_dir)
 
-    def log(self, msg, level=2):
+    def call_command_func(self, func, *args, **kwargs):
+        print t.bright_black
+        result = func(*args, **kwargs)
+        print t.normal
+        return result
+
+    def shell(self, cmd):
+        self.log(t.bold('Running command: ') + cmd)
+        p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, shell=True)
+        stdout, stderr = p.communicate()
+
+        if stdout:
+            self.log(stdout, level=2)
+
+        if stderr:
+            raise Exception(stderr)
+
+    def collect_for_build(self, build_dir):
+        with patched_settings(STATIC_ROOT=build_dir,
+                              STATIC_FILES_STORAGE=StaticFilesStorage):
+            call_command('collectstatic',
+                         verbosity=self.verbosity - 1,
+                         interactive=False,
+                         ignore_patterns=['CVS', '.*', '*~'])
+
+    def log(self, msg, level=1):
         """
         Log helper; from Django's collectstatic command.
         """
         msg = smart_str(msg)
         if not msg.endswith("\n"):
             msg += "\n"
+        if level > 1:
+            msg = t.bright_black(msg)
         if self.verbosity >= level:
             self.stdout.write(msg)
