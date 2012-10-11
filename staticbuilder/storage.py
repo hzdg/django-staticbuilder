@@ -16,3 +16,9 @@ class BuiltFileStorage(FileSystemStorage):
             return super(BuiltFileStorage, self).find(path, all)
         else:
             return []
+
+    def listdir(self, path):
+        if settings.STATICBUILDER_COLLECT_BUILT:
+            return super(BuiltFileStorage, self).listdir(path)
+        else:
+            return [], []
