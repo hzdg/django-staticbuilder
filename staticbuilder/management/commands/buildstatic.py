@@ -1,17 +1,33 @@
 from blessings import Terminal
+from contextlib import contextmanager
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.utils.encoding import smart_str
 import os
 from pipes import quote
 import shutil
 import subprocess
+from ...finders import BuildableFileFinder
 from ...utils import patched_settings
 
 
 t = Terminal()
+
+
+@contextmanager
+def buildable_files_finders():
+    old_get_finders = finders.get_finders
+
+    def new_get_finders():
+        for f in old_get_finders():
+            yield BuildableFileFinder(f)
+
+    finders.get_finders = new_get_finders
+    yield
+    finders.get_finders = old_get_finders
 
 
 class Command(BaseCommand):
@@ -49,8 +65,10 @@ class Command(BaseCommand):
 
     def call_command_func(self, func, *args, **kwargs):
         print t.bright_black
-        result = func(*args, **kwargs)
-        print t.normal
+        try:
+            result = func(*args, **kwargs)
+        finally:
+            print t.normal
         return result
 
     def shell(self, cmd):
@@ -66,13 +84,14 @@ class Command(BaseCommand):
             raise Exception(stderr)
 
     def collect_for_build(self, build_dir):
-        with patched_settings(STATIC_ROOT=build_dir,
-                              STATIC_FILES_STORAGE=StaticFilesStorage,
-                              STATICBUILDER_COLLECT_BUILT=False):
-            call_command('collectstatic',
-                         verbosity=self.verbosity - 1,
-                         interactive=False,
-                         ignore_patterns=['CVS', '.*', '*~'])
+        with buildable_files_finders():
+            with patched_settings(STATIC_ROOT=build_dir,
+                                  STATIC_FILES_STORAGE=StaticFilesStorage,
+                                  STATICBUILDER_COLLECT_BUILT=False):
+                call_command('collectstatic',
+                              verbosity=self.verbosity - 1,
+                              interactive=False,
+                              ignore_patterns=['CVS', '.*', '*~'])
 
     def log(self, msg, level=1):
         """
