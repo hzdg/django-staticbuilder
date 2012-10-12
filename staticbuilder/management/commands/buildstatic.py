@@ -91,7 +91,7 @@ class Command(BaseCommand):
                 call_command('collectstatic',
                               verbosity=self.verbosity - 1,
                               interactive=False,
-                              ignore_patterns=['CVS', '.*', '*~'])
+                              ignore_patterns=settings.STATICBUILDER_EXCLUDE_FILES)
 
     def log(self, msg, level=1):
         """
