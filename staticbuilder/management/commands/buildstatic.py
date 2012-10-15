@@ -4,7 +4,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.contrib.staticfiles import finders
-from django.contrib.staticfiles.storage import StaticFilesStorage
 from django.utils.encoding import smart_str
 import os
 from pipes import quote
@@ -86,7 +85,7 @@ class Command(BaseCommand):
     def collect_for_build(self, build_dir):
         with buildable_files_finders():
             with patched_settings(STATIC_ROOT=build_dir,
-                                  STATICFILES_STORAGE=StaticFilesStorage,
+                                  STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
                                   STATICBUILDER_COLLECT_BUILT=False):
                 call_command('collectstatic',
                               verbosity=self.verbosity - 1,
