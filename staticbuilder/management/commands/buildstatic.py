@@ -86,7 +86,7 @@ class Command(BaseCommand):
     def collect_for_build(self, build_dir):
         with buildable_files_finders():
             with patched_settings(STATIC_ROOT=build_dir,
-                                  STATIC_FILES_STORAGE=StaticFilesStorage,
+                                  STATICFILES_STORAGE=StaticFilesStorage,
                                   STATICBUILDER_COLLECT_BUILT=False):
                 call_command('collectstatic',
                               verbosity=self.verbosity - 1,
