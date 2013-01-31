@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
         self.verbosity = int(options.get('verbosity', '1'))
 
-        build_dir = settings.STATICBUILDER_BUILT_ROOT
+        build_dir = settings.STATICBUILDER_BUILD_ROOT
 
         # Remove the old build directory and backup
         bkup_dir = '%s.bkup' % build_dir

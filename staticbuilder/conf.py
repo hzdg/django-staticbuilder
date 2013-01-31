@@ -9,5 +9,5 @@ class StaticBuilderConf(AppConf):
 
     class Meta:
         required = [
-            'BUILT_ROOT',
+            'BUILD_ROOT',
         ]
