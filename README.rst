@@ -10,6 +10,8 @@ approach by giving you a simple way to add a build step to your workflow, but
 has absolutely no opinion about what that build step should be, making it easy
 to take advantage of whatever build tools you want.
 
+Check out the full documentation on readthedocs__.
+
 The heart of the staticbuilder build step is the ``buildstatic`` management
 command, and it is stupid simple. In fact, it only does two things: first, it
 collects your static files into a build directory and, second, it runs some
@@ -61,4 +63,5 @@ when you run ``collectstatic``.
 .. _AMD: http://requirejs.org/docs/whyamd.html
 __ https://github.com/jezdez/django_compressor
 __ https://github.com/cyberdelia/django-pipeline
+__ http://django-staticbuilder.readthedocs.org
 __ https://github.com/hzdg/django-staticbuilder/blob/master/staticbuilder/management/commands/buildstatic.py
