@@ -1,6 +1,4 @@
 from . import conf
-from .version import __version__
-
+from staticbuilder.pkgmeta import *
 
 conf
-__version__

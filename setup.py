@@ -5,15 +5,20 @@ from setuptools import setup, find_packages
 
 
 read = lambda filepath: codecs.open(filepath, 'r', 'utf-8').read()
-execfile(os.path.join(os.path.dirname(__file__), 'staticbuilder', 'version.py'))
+
+
+# Load package meta from the pkgmeta module without loading the package.
+pkgmeta = {}
+execfile(os.path.join(os.path.dirname(__file__), 'staticbuilder', 'pkgmeta.py'),
+         pkgmeta)
 
 
 setup(
-    name='django-staticbuilder',
+    name=pkgmeta['__title__'],
     description='Optimize your static files.',
     long_description=read(os.path.join(os.path.dirname(__file__), 'README.rst')),
-    version=__version__,
-    author='Matthew Tretter',
+    version=pkgmeta['__version__'],
+    author=pkgmeta['__author__'],
     author_email='m@tthewwithanm.com',
     url='http://github.com/hzdg/django-staticbuilder',
     download_url='http://github.com/hzdg/django-staticbuilder/tarball/master',
