@@ -1,6 +1,7 @@
 from blessings import Terminal
 from contextlib import contextmanager
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.contrib.staticfiles import finders
@@ -37,6 +38,8 @@ class Command(BaseCommand):
         self.verbosity = int(options.get('verbosity', '1'))
 
         build_dir = settings.STATICBUILDER_BUILD_ROOT
+        if not build_dir:
+            raise ImproperlyConfigured('STATICBUILDER_BUILD_ROOT must be set.')
 
         # Remove the old build directory and backup
         bkup_dir = '%s.bkup' % build_dir
