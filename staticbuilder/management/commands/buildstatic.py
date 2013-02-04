@@ -89,7 +89,7 @@ class Command(BaseCommand):
             self.log(stdout, level=2)
 
         if stderr:
-            raise Exception(stderr)
+            self.log(t.bold('Stderr:\n') + stderr)
 
     def collect_for_build(self, build_dir):
         with buildable_files_finders():
