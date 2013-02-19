@@ -81,15 +81,10 @@ class Command(BaseCommand):
 
     def shell(self, cmd):
         self.log(t.bold('Running command: ') + cmd)
-        p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, shell=True)
-        stdout, stderr = p.communicate()
 
-        if stdout:
-            self.log(stdout, level=2)
-
-        if stderr:
-            self.log(t.bold_red_on_black('Stderr:\n') + stderr)
+        return_code = subprocess.call(cmd, shell=True)
+        if return_code:
+            raise Exception('Failed with error code %s' % return_code)
 
     def collect_for_build(self, build_dir):
         with buildable_files_finders():
