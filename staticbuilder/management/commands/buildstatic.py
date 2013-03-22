@@ -38,6 +38,7 @@ class Command(BaseCommand):
     """
 
     help = 'Build optimized versions of your static assets.'
+    requires_model_validation = False
 
     def handle(self, *args, **options):
 
