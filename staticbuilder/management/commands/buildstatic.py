@@ -1,5 +1,6 @@
 from blessings import Terminal
 from django.conf import settings
+from django.contrib.staticfiles import storage as djstorage
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
@@ -8,6 +9,7 @@ import os
 from pipes import quote
 import shutil
 import subprocess
+from ...storage import BuiltFileStorage
 from ...utils import patched_settings, patched_finders
 
 
@@ -73,13 +75,19 @@ class Command(BaseCommand):
 
     def collect_for_build(self, build_dir):
         with patched_finders():
-            with patched_settings(STATIC_ROOT=build_dir,
-                                  STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
-                                  STATICBUILDER_COLLECT_BUILT=False):
-                call_command('collectstatic',
-                             verbosity=self.verbosity - 1,
-                             interactive=False,
-                             ignore_patterns=settings.STATICBUILDER_EXCLUDE_FILES)
+            with patched_settings(STATICBUILDER_COLLECT_BUILT=False):
+                # Patch the static files storage used by collectstatic
+                storage = BuiltFileStorage()
+                old_storage = djstorage.staticfiles_storage
+                djstorage.staticfiles_storage = storage
+
+                try:
+                    call_command('collectstatic',
+                                 verbosity=self.verbosity - 1,
+                                 interactive=False,
+                                 ignore_patterns=settings.STATICBUILDER_EXCLUDE_FILES)
+                finally:
+                    djstorage.staticfiles_storage = old_storage
 
     def log(self, msg, level=1):
         """
