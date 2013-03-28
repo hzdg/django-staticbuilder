@@ -57,6 +57,34 @@ This finder is important—it's how Django finds the built versions of your file
 when you run ``collectstatic``.
 
 
+Development
+-----------
+
+In order to ease development, this package includes a middleware class that will
+automatically build your static files as part of the request-response cycle. In
+order to use it, just add it to your ``MIDDLEWARE_CLASSES`` setting:
+
+.. code-block:: python
+
+    MIDDLEWARE_CLASSES = (
+        ...
+        'staticbuilder.middleware.BuildOnRequest',
+    )
+
+Now, whenever you access a view that returns an HTML response, staticbuilder
+will check to see if your static files have changed since the last build. If
+they have, it will trigger a new build. This way, your static files will always
+be up-to-date.
+
+In order to make sure your responses are delivered quickly when developing,
+you'll probably want to have different ``STATICBUILDER_BUILD_COMMANDS`` when
+``DEBUG`` is ``True``. (For example, you probably don't need to compress your
+CSS and JS while developing.)
+
+This middleware is automatically disabled when ``DEBUG`` is ``False``, so it
+won't run in production.
+
+
 .. _Sass: http://sass-lang.com/
 .. _Less: http://lesscss.org/
 .. _Coffee: http://coffeescript.org/
