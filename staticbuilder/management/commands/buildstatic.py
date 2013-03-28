@@ -1,33 +1,17 @@
 from blessings import Terminal
-from contextlib import contextmanager
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.contrib.staticfiles import finders
 from django.utils.encoding import smart_str
 import os
 from pipes import quote
 import shutil
 import subprocess
-from ...finders import BuildableFileFinder
-from ...utils import patched_settings
+from ...utils import patched_settings, patched_finders
 
 
 t = Terminal()
-
-
-@contextmanager
-def buildable_files_finders():
-    old_get_finders = finders.get_finders
-
-    def new_get_finders():
-        for f in old_get_finders():
-            yield BuildableFileFinder(f)
-
-    finders.get_finders = new_get_finders
-    yield
-    finders.get_finders = old_get_finders
 
 
 class Command(BaseCommand):
@@ -88,7 +72,7 @@ class Command(BaseCommand):
             raise Exception('Failed with error code %s' % return_code)
 
     def collect_for_build(self, build_dir):
-        with buildable_files_finders():
+        with patched_finders():
             with patched_settings(STATIC_ROOT=build_dir,
                                   STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
                                   STATICBUILDER_COLLECT_BUILT=False):
