@@ -4,6 +4,12 @@ from django.contrib.staticfiles import finders
 from .finders import BuildableFileFinder
 
 
+def get_buildable_file_finders():
+    with patched_settings(STATICBUILDER_COLLECT_BUILT=False):
+        for f in finders.get_finders():
+            yield BuildableFileFinder(f)
+
+
 @contextmanager
 def patched_finders():
     old_get_finders = finders.get_finders
