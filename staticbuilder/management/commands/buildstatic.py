@@ -93,9 +93,9 @@ class Command(BaseCommand):
                                   STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
                                   STATICBUILDER_COLLECT_BUILT=False):
                 call_command('collectstatic',
-                              verbosity=self.verbosity - 1,
-                              interactive=False,
-                              ignore_patterns=settings.STATICBUILDER_EXCLUDE_FILES)
+                             verbosity=self.verbosity - 1,
+                             interactive=False,
+                             ignore_patterns=settings.STATICBUILDER_EXCLUDE_FILES)
 
     def log(self, msg, level=1):
         """
