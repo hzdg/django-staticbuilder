@@ -45,9 +45,6 @@ class Command(BaseCommand):
         except OSError:
             pass
 
-        # Create the static build directory.
-        os.makedirs(build_dir)
-
         # Copy the static assets to a the build directory.
         self.log(t.bold('Collecting static assets for building...'))
         self.call_command_func(self.collect_for_build, build_dir)

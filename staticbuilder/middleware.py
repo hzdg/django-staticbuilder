@@ -25,7 +25,10 @@ class BuildOnRequest(object):
                 response.status_code == 200 and
                 response['content-type'].startswith('text/html')):
 
-            # Get mtime of build directory.
+            if not os.path.exists(settings.STATICBUILDER_BUILD_ROOT):
+                call_command('buildstatic')
+                return response
+
             last_built_at = os.path.getmtime(settings.STATICBUILDER_BUILD_ROOT)
 
             # Check to see if any static files have been updated.
@@ -35,6 +38,6 @@ class BuildOnRequest(object):
                     if mtime > last_built_at:
                         # If a file has been updated, short circuit and rebuild.
                         call_command('buildstatic')
-                        break
+                        return response
 
         return response
