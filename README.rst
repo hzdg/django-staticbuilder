@@ -18,6 +18,15 @@ collects your static files into a build directory and, second, it runs some
 shell commands. (Seriously, look at `the source`__. It delegates most of its
 work to Django's ``collectstatic``. And that's A Good Thing.)
 
+To get started, add ``staticbuilder`` to your ``INSTALLED_APPS``:
+
+.. code-block:: python
+
+    INSTALLED_APPS = (
+        ...
+        'staticbuilder',
+    )
+
 To specify the build directory, use the ``STATICBUILDER_BUILD_ROOT`` setting:
 
 .. code-block:: python
