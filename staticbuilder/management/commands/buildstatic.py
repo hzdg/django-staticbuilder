@@ -1,16 +1,12 @@
 from blessings import Terminal
 from django.conf import settings
-from django.contrib.staticfiles import storage as djstorage
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.utils.encoding import smart_str
-import os
+from optparse import make_option
 from pipes import quote
-import shutil
 import subprocess
-from ...storage import BuiltFileStorage
-from ...utils import patched_settings, patched_finders
 
 
 t = Terminal()
@@ -18,13 +14,20 @@ t = Terminal()
 
 class Command(BaseCommand):
     """
-    Collects all static files into ``STATICBUILDER_BUILD_ROOT``, and then executes
-    the shell commands in ``STATICBUILDER_BUILD_COMMANDS``.
+    Executes the shell commands in ``STATICBUILDER_BUILD_COMMANDS``
+    on all static files in ``STATICBUILDER_BUILD_ROOT``.
 
     """
 
     help = 'Build optimized versions of your static assets.'
     requires_model_validation = False
+    option_list = BaseCommand.option_list + (
+        make_option('--nocollect',
+            action='store_false',
+            dest='collect',
+            default=True,
+            help='Skip collecting static files for build'),
+    )
 
     def handle(self, *args, **options):
 
@@ -34,20 +37,11 @@ class Command(BaseCommand):
         if not build_dir:
             raise ImproperlyConfigured('STATICBUILDER_BUILD_ROOT must be set.')
 
-        # Remove the old build directory and backup
-        bkup_dir = '%s.bkup' % build_dir
-        shutil.rmtree(build_dir, ignore_errors=True)
-        shutil.rmtree(bkup_dir, ignore_errors=True)
-
-        # Back up the last build
-        try:
-            os.rename(build_dir, bkup_dir)
-        except OSError:
-            pass
-
-        # Copy the static assets to a the build directory.
-        self.log(t.bold('Collecting static assets for building...'))
-        self.call_command_func(self.collect_for_build, build_dir)
+        # Optionally run collectforbuild first (runs by default).
+        if options['collect']:
+            call_command('collectforbuild',
+                         verbosity=self.verbosity,
+                         interactive=False)
 
         # Run the build commands.
         build_commands = getattr(settings, 'STATICBUILDER_BUILD_COMMANDS', None) or []
@@ -55,36 +49,12 @@ class Command(BaseCommand):
             cmd = command.format(build_dir=quote(build_dir))
             self.shell(cmd)
 
-    def call_command_func(self, func, *args, **kwargs):
-        print t.bright_black
-        try:
-            result = func(*args, **kwargs)
-        finally:
-            print t.normal
-        return result
-
     def shell(self, cmd):
         self.log(t.bold('Running command: ') + cmd)
 
         return_code = subprocess.call(cmd, shell=True)
         if return_code:
             raise Exception('Failed with error code %s' % return_code)
-
-    def collect_for_build(self, build_dir):
-        with patched_finders():
-            with patched_settings(STATICBUILDER_COLLECT_BUILT=False):
-                # Patch the static files storage used by collectstatic
-                storage = BuiltFileStorage()
-                old_storage = djstorage.staticfiles_storage
-                djstorage.staticfiles_storage = storage
-
-                try:
-                    call_command('collectstatic',
-                                 verbosity=self.verbosity - 1,
-                                 interactive=False,
-                                 ignore_patterns=settings.STATICBUILDER_EXCLUDE_FILES)
-                finally:
-                    djstorage.staticfiles_storage = old_storage
 
     def log(self, msg, level=1):
         """

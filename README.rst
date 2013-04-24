@@ -94,6 +94,19 @@ This middleware is automatically disabled when ``DEBUG`` is ``False``, so it
 won't run in production.
 
 
+Collecting Without Building
+---------------------------
+
+The ``buildstatic`` command is actually a two-step process: collecting static
+files into a build directory, and running some shell commands. The first step is
+actually another command: ``collectforbuild``. This command may be run by itself
+in the event that you want to do a different set of build steps than what you
+have configured (during a deployment, for example). The ``buildstatic`` command
+accepts an optional ``--nocollect`` flag that will skip the ``collectforbuild``
+step altogether. Note that this means ``collectforbuild`` will need to have been
+run at some time prior to ``buildstatic --nocollect``.
+
+
 .. _Sass: http://sass-lang.com/
 .. _Less: http://lesscss.org/
 .. _Coffee: http://coffeescript.org/
