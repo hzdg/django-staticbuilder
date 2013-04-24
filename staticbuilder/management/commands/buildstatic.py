@@ -17,6 +17,10 @@ class Command(BaseCommand):
     Executes the shell commands in ``STATICBUILDER_BUILD_COMMANDS``
     on all static files in ``STATICBUILDER_BUILD_ROOT``.
 
+    By default, collects all static files into ``STATICBUILDER_BUILD_ROOT``,
+    before executing the shell commands. Collecting can be disabled with the
+    ``--nocollect`` flag.
+
     """
 
     help = 'Build optimized versions of your static assets.'
