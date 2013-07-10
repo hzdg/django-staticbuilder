@@ -44,6 +44,7 @@ class Command(BaseCommand):
         # Optionally run collectforbuild first (runs by default).
         if options['collect']:
             call_command('collectforbuild',
+                         clean=True,
                          verbosity=self.verbosity,
                          interactive=False)
 

@@ -1,6 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+import os
 
 
 class BuiltFileStorage(FileSystemStorage):
@@ -25,3 +26,13 @@ class BuiltFileStorage(FileSystemStorage):
             return super(BuiltFileStorage, self).listdir(path)
         else:
             return [], []
+
+    def delete(self, name):
+        try:
+            super(BuiltFileStorage, self).delete(name)
+        except OSError:
+            name = self.path(name)
+            if os.path.isdir(name):
+                os.rmdir(name)
+            else:
+                raise
