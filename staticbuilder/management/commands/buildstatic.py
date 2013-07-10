@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.utils.encoding import smart_str
 from optparse import make_option
+import os
 from pipes import quote
 import subprocess
 
@@ -53,6 +54,9 @@ class Command(BaseCommand):
         for command in build_commands:
             cmd = command.format(build_dir=quote(build_dir))
             self.shell(cmd)
+
+        # Touch the build root to indicate when it was built last.
+        os.utime(build_dir, None)
 
     def shell(self, cmd):
         self.log(t.bold('Running command: ') + cmd)
