@@ -43,11 +43,11 @@ class Command(BaseCommand):
         self.call_command_func(self.collect_for_build, build_dir)
 
     def call_command_func(self, func, *args, **kwargs):
-        print t.bright_black
+        print(t.bright_black)
         try:
             result = func(*args, **kwargs)
         finally:
-            print t.normal
+            print(t.normal)
         return result
 
     def collect_for_build(self, build_dir):
