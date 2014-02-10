@@ -5,6 +5,8 @@ import os
 
 
 class BuiltFileStorage(FileSystemStorage):
+    _wrapped = None
+
     def __init__(self, location=None, base_url=None, *args, **kwargs):
         if location is None:
             location = settings.STATICBUILDER_BUILD_ROOT
