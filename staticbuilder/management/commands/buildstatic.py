@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_text
 from optparse import make_option
 import os
 from pipes import quote
@@ -69,7 +69,7 @@ class Command(BaseCommand):
         """
         Log helper; from Django's collectstatic command.
         """
-        msg = smart_unicode(msg)
+        msg = smart_text(msg)
         if not msg.endswith("\n"):
             msg += "\n"
         if level > 1:

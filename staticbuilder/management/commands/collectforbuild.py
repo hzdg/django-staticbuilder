@@ -4,7 +4,7 @@ from django.contrib.staticfiles import finders, storage as djstorage
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_text
 from optparse import make_option
 import os
 from ...storage import BuiltFileStorage
@@ -108,7 +108,7 @@ class Command(BaseCommand):
         stale_files = built_files - found_files
 
         for fpath in stale_files:
-            self.log(u"Deleting '%s'" % smart_unicode(fpath), level=1)
+            self.log(u"Deleting '%s'" % smart_text(fpath), level=1)
             storage.delete(fpath)
 
         found_dirs = set()
@@ -126,15 +126,15 @@ class Command(BaseCommand):
             try:
                 storage.delete(fpath)
             except OSError:
-                self.log(u"Couldn't remove empty directory '%s'" % smart_unicode(fpath), level=1)
+                self.log(u"Couldn't remove empty directory '%s'" % smart_text(fpath), level=1)
             else:
-                self.log(u"Deleted empty directory '%s'" % smart_unicode(fpath), level=1)
+                self.log(u"Deleted empty directory '%s'" % smart_text(fpath), level=1)
 
     def log(self, msg, level=1):
         """
         Log helper; from Django's collectstatic command.
         """
-        msg = smart_unicode(msg)
+        msg = smart_text(msg)
         if not msg.endswith("\n"):
             msg += "\n"
         if level > 1:
