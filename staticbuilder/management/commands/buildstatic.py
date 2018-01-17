@@ -13,6 +13,14 @@ import subprocess
 t = Terminal()
 
 
+option_kwargs = {
+    'action': 'store_false',
+    'dest': 'collect',
+    'default': True,
+    'help': 'Skip collecting static files for build',
+}
+
+
 class Command(BaseCommand):
     """
     Executes the shell commands in ``STATICBUILDER_BUILD_COMMANDS``
@@ -26,13 +34,21 @@ class Command(BaseCommand):
 
     help = 'Build optimized versions of your static assets.'
     requires_model_validation = False
-    option_list = BaseCommand.option_list + (
-        make_option('--nocollect',
-            action='store_false',
-            dest='collect',
-            default=True,
-            help='Skip collecting static files for build'),
-    )
+
+    @property
+    def option_list(self):
+        """
+        For compatibility with Django<1.10
+        """
+        try:
+            return BaseCommand.option_list + (
+                make_option('--nocollect', **option_kwargs)
+            )
+        except:
+            return None
+
+    def add_arguments(self, parser):
+        parser.add_argument('--nocollect', **option_kwargs)
 
     def handle(self, *args, **options):
 

@@ -13,6 +13,13 @@ from ...utils import patched_settings, patched_finders
 
 t = Terminal()
 
+clean_option_kwargs = {
+    'action': 'store_true',
+    'dest': 'clean',
+    'default': False,
+    'help': 'Remove artifacts from previous builds',
+}
+
 
 class Command(BaseCommand):
     """
@@ -22,13 +29,22 @@ class Command(BaseCommand):
 
     help = 'Collect your static assets for building.'
     requires_model_validation = False
-    option_list = BaseCommand.option_list + (
-        make_option('-c', '--clean',
-                    action='store_true',
-                    dest='clean',
-                    default=False,
-                    help='Remove artifacts from previous builds'),
-    )
+
+    @property
+    def option_list(self):
+        """
+        For compatibility with Django<1.10
+        """
+        try:
+            return BaseCommand.option_list + (
+                make_option('-c', '--clean', **clean_option_kwargs)
+            )
+        except:
+            return None
+
+    def add_arguments(self, parser):
+        parser.add_argument('-c', '--clean', **clean_option_kwargs)
+
 
     def handle(self, *args, **options):
         self.clean = options['clean']
